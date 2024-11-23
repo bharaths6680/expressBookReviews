@@ -10,13 +10,30 @@ const isValid = (username)=>{ //returns boolean
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
+  return users.filter(user => user.username === username && user.password === password).length > 0
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+regd_users.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  try {
+    if(!username || !password){
+      throw new Error("Username and password are required");
+    }
+    if(authenticatedUser(username,password)){
+      let accessToken = jwt.sign({
+        data: password
+    }, 'access', { expiresIn: 60 * 60 });
+      // Store access token and username in session
+      req.session.authorization = {
+        accessToken, username
+    }
+      return res.status(200).json({accessToken});
+    }
+    throw new Error("Invalid user credentials");
+  } catch (error) {
+    res.status(400).json({ error: error.toString() })
+  }
 });
 
 regd_users.get("/users", (req, res) => {
@@ -26,9 +43,26 @@ regd_users.get("/users", (req, res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const { review } = req.query;
+  const isbn = req.params.isbn;
+  const user = req.session.authorization.username;
+  try {
+    if (!user || !isbn || !review) {
+      throw new Error("User, isbn and review are required");
+    }
+    if (isValid(user)) {
+      if (books[isbn].reviews.hasOwnProperty(user)) {
+        books[isbn].reviews[user] = review;
+      } else {
+        books[isbn].reviews[user] = review;
+      }
+    }
+    return res.status(200).json({ message: "Review added/modified successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.toString() })
+  }
 });
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;

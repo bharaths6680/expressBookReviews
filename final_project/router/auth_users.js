@@ -63,6 +63,21 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   }
 });
 
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const isbn = req.params.isbn;
+  const user = req.session.authorization.username;
+  try {
+    if (!user || !isbn) {
+      throw new Error("User and isbn are required");
+    }
+    if (books[isbn].reviews.hasOwnProperty(user)) {
+      delete books[isbn].reviews[user];
+    }
+    return res.status(200).json({ message: "Review deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.toString() })
+  }
+});
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;

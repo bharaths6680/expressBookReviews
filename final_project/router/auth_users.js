@@ -6,7 +6,7 @@ const regd_users = express.Router();
 let users = [];
 
 const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+  return users.filter(user => user.username === username).length > 0
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
@@ -16,6 +16,11 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   //Write your code here
+  return res.status(300).json({message: "Yet to be implemented"});
+});
+
+regd_users.get("/users", (req, res) => {
+  //Write your code here  
   return res.status(300).json({message: "Yet to be implemented"});
 });
 
